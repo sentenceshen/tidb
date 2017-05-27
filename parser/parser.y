@@ -3925,7 +3925,7 @@ CastType:
 		x := types.NewFieldType(mysql.TypeString)
 		x.Flen = $2.(int)
 		x.Charset = charset.CharsetBin
-		x.Collate = charset.CharsetBin
+		x.Collate = charset.CollationBin
 		$$ = x
 	}
 |	"CHAR" OptFieldLen OptBinary OptCharset

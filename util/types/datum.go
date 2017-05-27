@@ -830,39 +830,36 @@ func (d *Datum) convertToString(sc *variable.StatementContext, target *FieldType
 	default:
 		return invalidConv(d, target.Tp)
 	}
-
-	var err error
-	if target.Flen >= 0 {
-		// Flen is the rune length, not binary length, for UTF8 charset, we need to calculate the
-		// rune count and truncate to Flen runes if it is too long.
-		if target.Charset == charset.CharsetUTF8 || target.Charset == charset.CharsetUTF8MB4 {
-			var runeCount int
-			var truncateLen int
-			for i := range s {
-				runeCount++
-				if runeCount == target.Flen+1 {
-					// We don't break here because we need to iterate to the end to get runeCount.
-					truncateLen = i
-				}
-			}
-			if truncateLen > 0 {
-				if !sc.IgnoreTruncate {
-					err = ErrDataTooLong.Gen("Data Too Long, field len %d, data len %d", target.Flen, runeCount)
-				}
-				s = truncateStr(s, truncateLen)
-			}
-		} else if len(s) > target.Flen {
-			if !sc.IgnoreTruncate {
-				err = ErrDataTooLong.Gen("Data Too Long, field len %d, data len %d", target.Flen, len(s))
-			}
-			s = truncateStr(s, target.Flen)
-		}
-	}
+	s, err := produceStrWithSpecifiedTp(s, target, sc)
 	ret.SetString(s)
 	if target.Charset == charset.CharsetBin {
 		ret.k = KindBytes
 	}
 	return ret, errors.Trace(err)
+}
+
+// produceStrWithSpecifiedTp produces a new string according to `Tp`.
+func produceStrWithSpecifiedTp(s string, tp *FieldType, sc *variable.StatementContext) (_ string, err error) {
+	if tp.Flen >= 0 {
+		if tp.Charset == charset.CharsetBin {
+			length := len(s)
+			if length > tp.Flen {
+				err = ErrDataTooLong.Gen("Data Too Long, field len %d, data len %d", tp.Flen, len(s))
+				s = string(s[:tp.Flen])
+			} else if length < tp.Flen {
+				// For binary string, values shorter than specified number of bytes are padded with 0x00 bytes to the specified length.
+				padding := make([]byte, tp.Flen-length)
+				s = string(append(padding, s...))
+			}
+		} else {
+			runeArray := []rune(s)
+			if len(runeArray) > tp.Flen {
+				err = ErrDataTooLong.Gen("Data Too Long, field len %d, data len %d", tp.Flen, len(s))
+				s = string(runeArray[:tp.Flen])
+			}
+		}
+	}
+	return s, errors.Trace(sc.HandleTruncate(err))
 }
 
 func (d *Datum) convertToInt(sc *variable.StatementContext, target *FieldType) (Datum, error) {
