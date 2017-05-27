@@ -849,7 +849,7 @@ func produceStrWithSpecifiedTp(s string, tp *FieldType, sc *variable.StatementCo
 			} else if length < tp.Flen {
 				// For binary string, values shorter than specified number of bytes are padded with 0x00 bytes to the specified length.
 				padding := make([]byte, tp.Flen-length)
-				s = string(append(padding, s...))
+				s = string(append([]byte(s), padding...))
 			}
 		} else {
 			runeArray := []rune(s)

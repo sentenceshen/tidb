@@ -69,7 +69,7 @@ func (s *testEvaluatorSuite) TestCast(c *C) {
 	res, err = f.Eval(nil)
 	c.Assert(err, IsNil)
 	c.Assert(len(res.GetString()), Equals, 5)
-	c.Assert(res.GetString(), Equals, string([]byte{0x00, 0x00, 0x00, 0x00, 'a'}))
+	c.Assert(res.GetString(), Equals, string([]byte{'a', 0x00, 0x00, 0x00, 0x00}))
 }
 
 func (s *testEvaluatorSuite) TestCastFuncSig(c *C) {
