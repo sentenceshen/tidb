@@ -845,7 +845,7 @@ func produceStrWithSpecifiedTp(s string, tp *FieldType, sc *variable.StatementCo
 			length := len(s)
 			if length > tp.Flen {
 				err = ErrDataTooLong.Gen("Data Too Long, field len %d, data len %d", tp.Flen, len(s))
-				s = string(s[:tp.Flen])
+				s = s[:tp.Flen]
 			} else if length < tp.Flen {
 				// For binary string, values shorter than specified number of bytes are padded with 0x00 bytes to the specified length.
 				padding := make([]byte, tp.Flen-length)
