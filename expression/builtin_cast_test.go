@@ -44,7 +44,7 @@ func (s *testEvaluatorSuite) TestCast(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(res.GetString(), Equals, "你好wor")
 
-	// cast(str as char(N)), N < len([]rune(str)).
+	// cast(str as char(N)), N > len([]rune(str)).
 	// cast("a" as char(5))
 	f = NewCastFunc(tp, &Constant{Value: types.NewDatum("a"), RetType: types.NewFieldType(mysql.TypeString)}, ctx)
 	res, err = f.Eval(nil)
@@ -63,7 +63,7 @@ func (s *testEvaluatorSuite) TestCast(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(res.GetString(), Equals, str[:5])
 
-	// cast(str as binary(N)), N < len([]byte(str)).
+	// cast(str as binary(N)), N > len([]byte(str)).
 	// cast("a" as binary(5))
 	f = NewCastFunc(tp, &Constant{Value: types.NewDatum("a"), RetType: types.NewFieldType(mysql.TypeString)}, ctx)
 	res, err = f.Eval(nil)
